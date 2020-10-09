@@ -5,8 +5,8 @@
 package manual
 
 // #include <stdlib.h>
-import "C"
-import "unsafe"
+// import "C"
+import _ "unsafe"
 
 // The go:linkname directives provides backdoor access to private functions in
 // the runtime. Below we're accessing the throw function.
@@ -25,6 +25,8 @@ func New(n int) []byte {
 	if n == 0 {
 		return make([]byte, 0)
 	}
+
+	return make([]byte, n)
 	// We need to be conscious of the Cgo pointer passing rules:
 	//
 	//   https://golang.org/cmd/cgo/#hdr-Passing_pointers
@@ -37,15 +39,15 @@ func New(n int) []byte {
 	//   passing uninitialized C memory to Go code if the Go code is going to
 	//   store pointer values in it. Zero out the memory in C before passing it
 	//   to Go.
-	ptr := C.calloc(C.size_t(n), 1)
-	if ptr == nil {
-		// NB: throw is like panic, except it guarantees the process will be
-		// terminated. The call below is exactly what the Go runtime invokes when
-		// it cannot allocate memory.
-		throw("out of memory")
-	}
-	// Interpret the C pointer as a pointer to a Go array, then slice.
-	return (*[MaxArrayLen]byte)(unsafe.Pointer(ptr))[:n:n]
+	// ptr := C.calloc(C.size_t(n), 1)
+	// if ptr == nil {
+	// 	// NB: throw is like panic, except it guarantees the process will be
+	// 	// terminated. The call below is exactly what the Go runtime invokes when
+	// 	// it cannot allocate memory.
+	// 	throw("out of memory")
+	// }
+	// // Interpret the C pointer as a pointer to a Go array, then slice.
+	// return (*[MaxArrayLen]byte)(unsafe.Pointer(ptr))[:n:n]
 }
 
 // Free frees the specified slice.
@@ -54,7 +56,7 @@ func Free(b []byte) {
 		if len(b) == 0 {
 			b = b[:cap(b)]
 		}
-		ptr := unsafe.Pointer(&b[0])
-		C.free(ptr)
+		// ptr := unsafe.Pointer(&b[0])
+		// C.free(ptr)
 	}
 }
